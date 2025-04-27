@@ -1,0 +1,478 @@
+.hover-font {
+  margin: 0; /* Ensure no margins on the hover-font container */
+}
+
+.header-card {
+  padding: 16px; /* Adjust padding as needed */
+  /* Remove any fixed height you might have set */
+}
+
+/* globals.css */
+.hover-font h1 {  /* Target the h1 inside hover-font */
+  font-size: 2rem; /* Use relative units like rem */
+  margin: 0;       /* Reset any default margins */
+}
+
+@media (max-width: 768px) { /* Adjust breakpoint as needed */
+  .hover-font h1 {
+    font-size: 1.4rem; /* Reduce font size on smaller screens */
+    padding-top: 55px;
+  }
+}
+
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.container > * {
+  pointer-events: auto;
+}
+
+.h1 {
+  font-size: 85px;
+}
+
+.header {
+  margin: 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  font-size: 13px;
+  position: relative;
+  z-index: 1;
+}
+
+.header-card {
+  padding: 4px;
+  padding-top: 10px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  will-change: transform, z-index;
+  transition: 0.2s ease;
+  display: inline-block;
+}
+
+@keyframes header-animation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media only screen and (max-width: 1256px) {
+  .currently-container {
+    display: none !important;
+  }
+}
+
+.works-index {
+  display: flex;
+  flex-direction: column;
+  margin-top: 47px;
+  margin-left: 40px;
+}
+
+@media only screen and (max-width: 796px) {
+  .works-index-container {
+    display: none !important;
+  }
+
+  .works-index {
+    display: none !important;
+  }
+}
+
+.cards-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.card-container {
+  cursor: grab;
+  position: absolute;
+  pointer-events: auto;
+  transform-origin: center;
+}
+
+.card {
+  will-change: transform, filter;
+  padding: 4px;
+  padding-top: 2px;
+  background-color: transparent;
+  border-radius: 8px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  will-change: transform, z-index;
+  transition: 0.2s ease;
+  display: inline-block;
+  position: relative;
+  z-index: 2;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card:active {
+  scale: 1.01;
+  box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px,
+    rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.card-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 5px;
+  margin-bottom: 0px;
+}
+
+.card-link {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: baseline;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+
+.card-link:hover {
+  gap: 10px;
+  opacity: 0.5;
+}
+
+@media only screen and (max-width: 576px) {
+  .card {
+    scale: 0.8;
+  }
+
+  .card:active {
+    scale: 0.81;
+  }
+}
+
+.card-name {
+  color: black;
+
+  width: fit-content;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+@keyframes rotate {
+  to {
+    rotate: 1turn;
+  }
+}
+
+
+.currently-img-wrapper {
+  position: relative;
+  z-index: 2;
+  cursor: grab;
+
+  width: 133px;
+  height: 100px;
+}
+
+@media only screen and (max-width: 876px) {
+  .currently-img-wrapper {
+    width: 94px;
+    height: 72px;
+  }
+
+  .currently-img {
+    width: 94px;
+    height: 72px;
+  }
+}
+
+.currently-img-wrapper:active {
+  cursor: grabbing;
+}
+
+.currently-img {
+  border: 4px solid white;
+  transform: rotate(-8deg);
+  box-shadow: rgba(9, 30, 66, 0.15) 0px 4px 8px -2px,
+    rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+
+  transition: 0.2s ease;
+}
+
+.currently-img:active {
+  scale: 1.01;
+  box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px,
+    rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+}
+
+.link,
+.hoverable-work {
+  text-decoration: none;
+  transition: 0.1s ease;
+  color: inherit;
+}
+
+.link:hover {
+  background-color: #d9d9d9;
+  box-shadow: 4px 0 0 #d9d9d9, -4px 0 0 #d9d9d9;
+  color: black;
+}
+
+.hoverable-work {
+  cursor: pointer;
+  display: block;
+  padding-inline: 4px;
+}
+
+.hoverable-work:hover {
+  background-color: #e6e5e5;
+}
+
+.about-link {
+  text-decoration: none;
+  transition: 0.1s ease;
+  color: inherit;
+
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: baseline;
+
+  width: fit-content;
+}
+
+.about-link:hover {
+  gap: 10px;
+  opacity: 0.5;
+}
+
+
+/* Styles for animating each card */
+
+@keyframes toss-0 {
+  0% {
+    transform: translate3d(80vw, -95vh, 0) rotate(-5deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(7deg);
+  }
+}
+.card-0 {
+  position: absolute;
+  animation: toss-0 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transform: translate3d(80vw, -95vh, 0) rotate(-5deg);
+  animation-delay: 0.02s;
+}
+
+@keyframes toss-1 {
+  0% {
+    transform: translate3d(-104vw, -106vh, 0) rotate(-15deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-4deg);
+  }
+}
+.card-1 {
+  position: absolute;
+  animation: toss-1 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transform: translate3d(-104vw, -106vh, 0) rotate(-15deg);
+  animation-delay: 0.04s;
+}
+
+@keyframes toss-2 {
+  0% {
+    transform: translate3d(-120vw, -104vh, 0) rotate(20deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(9deg);
+  }
+}
+.card-2 {
+  position: absolute;
+  animation: toss-2 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transform: translate3d(-120vw, -104vh, 0) rotate(20deg);
+  animation-delay: 0.06s;
+}
+
+@keyframes toss-3 {
+  0% {
+    transform: translate3d(124vw, 104vh, 0) rotate(4deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-8deg);
+  }
+}
+.card-3 {
+  position: absolute;
+  animation: toss-3 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transform: translate3d(124vw, 104vh, 0) rotate(4deg);
+  animation-delay: 0.08s;
+}
+
+@keyframes toss-4 {
+  0% {
+    transform: translate3d(0vw, -120vh, 0) rotate(-24deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-4deg);
+  }
+}
+.card-4 {
+  position: absolute;
+  animation: toss-4 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transform: translate3d(0vw, -120vh, 0) rotate(-24deg);
+  animation-delay: 0.1s;
+}
+
+@keyframes toss-5 {
+  0% {
+    transform: translate3d(106vw, -106vh, 0) rotate(10deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(9deg);
+  }
+}
+.card-5 {
+  position: absolute;
+  animation: toss-5 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transform: translate3d(106vw, -106vh, 0) rotate(10deg);
+  animation-delay: 0.12s;
+}
+
+@keyframes toss-6 {
+  0% {
+    transform: translate3d(-110vw, -104vh, 0) rotate(-25deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-8deg);
+  }
+}
+.card-6 {
+  position: absolute;
+  animation: toss-6 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transform: translate3d(-110vw, -104vh, 0) rotate(-25deg);
+  animation-delay: 0.14s;
+}
+
+@keyframes toss-7 {
+  0% {
+    transform: translate3d(104vh, -112vh, 0) rotate(15deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-4deg);
+  }
+}
+.card-7 {
+  position: absolute;
+  animation: toss-7 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transform: translate3d(104vh, -112vh, 0) rotate(15deg);
+  animation-delay: 0.16s;
+}
+
+@keyframes toss-8 {
+  0% {
+    transform: translate3d(-106vw, 112vh, 0) rotate(-10deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(6deg);
+  }
+}
+.card-8 {
+  position: absolute;
+  animation: toss-8 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transform: translate3d(-106vw, 112vh, 0) rotate(-10deg);
+  animation-delay: 0.18s;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.headerInnerWrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+}
+
+.headerCard {
+  transform: none;
+  padding-inline: 8px;
+  padding-block: 4px;
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.headerCardDescription{
+  margin: 0;
+}
+
+.aboutLink {
+  color: inherit;
+}
+
+.worksIndexWrapper {
+  display: flex;
+  flex-direction: row;
+  padding-top: 2px;
+  gap: 15px;
+}
+
+.worksIndex {
+  display: flex;
+  flex-direction: column;
+}
+
+.hoverableWork {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.hoverableWorkYear {
+  color: #b9b9b9;
+}
+
+.hoverFont{
+   display: inline-block;
+   margin: 0;
+}
+
+.animatedTextHeader{
+   line-height: 1.2;
+   margin: 0;
+}
+.animatedTextSpan{
+    transition: font-family 0.3s ease;
+    display: inline-block;
+     vertical-align: top;
+}

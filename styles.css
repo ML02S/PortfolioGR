@@ -1,0 +1,446 @@
+/* Algemene instellingen */
+body {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Zorg ervoor dat de canvassen niet klikbaar zijn */
+}
+
+#grainCanvas {
+    z-index: -1; /* Achtergrond (grainy texture) */
+}
+
+#contentCanvas {
+    z-index: 1; /* Voorgrond (bestaande content) */
+}
+
+
+/* Specifieke stijlen voor tekst */
+h1 {
+    font-size: 2.0rem;
+    font-family: 'Departure Mono';
+    font-weight: normal;
+    margin-bottom: 1.2rem;
+}
+
+h2 {
+    font-size: 1.2rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+h3 {
+    font-family: 'Departure Mono', monospace;
+    font-size: 1.3rem;
+    margin-bottom: 0rem;
+}
+
+/* Retro en cursieve teksten */
+p {
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+h4 {
+    font-family: 'Jacquarda Bastarda 9', cursive;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+
+/* Container voor inhoud */
+.container {
+    width: 100%;
+    max-width: 90vh;
+    margin: 1rem;
+    padding: 0 1rem;
+}
+
+/* Fade-in animaties */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.fade-out {
+    opacity: 1;
+    transition: opacity 0.8s ease-in-out;
+}
+
+.fade-out.visible {
+    opacity: 0;
+}
+  
+
+/* Sectie-indeling */
+.section {
+    display: flex;
+    gap: 3.5rem;
+    flex-wrap: wrap; /* Kolommen naar nieuwe regel bij kleine schermen */
+    padding-top: 0rem;
+    margin-top: 0rem;
+    position: relative;
+}
+
+/* Scheidingslijnen */
+.section-line-top,
+.section-line-bottom {
+    width: 100%;
+    height: 1px;
+    background-color: #ddd;
+    margin: 0 auto;
+}
+
+/* Kolommen */
+.column {
+    flex: 1;
+    max-width: 45%;
+    margin-bottom: 0px;
+}
+
+/* Lijsten */
+ul {
+    list-style-type: none;
+    padding: 0;
+    font-size: 0.85rem;
+    margin: 5px;
+}
+
+ul li {
+    display: flex; /* Horizontale layout */
+    align-items: center; /* Verticaal gecentreerd */
+    margin-bottom: 0rem; /* Afstand tussen lijstitems */
+}
+
+ul li .color-block {
+    margin-right: 10px;
+    width: 6px;
+    height: 6px;
+}
+
+/* Links in de lijst */
+ul li a {
+    display: flex;
+    justify-content: space-between; /* Tekst en pijl aan de uiteinden */
+    align-items: center;
+    text-decoration: none; /* Geen onderstreping */
+    color: #323232;
+    width: 100%; /* Link vult volledige breedte */
+}
+
+ul li a span {
+    flex-grow: 1; /* Tekst vult beschikbare ruimte */
+    white-space: nowrap; /* Voorkom tekstbreuk */
+    overflow: hidden; /* Verberg overlopen tekst */
+    text-overflow: ellipsis; /* Voeg ellips toe als tekst te lang is */
+}
+
+ul li a::after {
+    content: '↗'; /* Pijl toevoegen */
+    margin-left: 10px;
+    color: #131314;
+    font-size: 1rem;
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Hover-effect op de linkpijl */
+ul li a:hover::after {
+    transform: translateX(5px); /* Beweeg pijl naar rechts */
+}
+
+.color-block {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-right: 8px;
+    background: linear-gradient(45deg, red, blue); /* Default gradient */
+    vertical-align: middle;
+}
+
+/* Hover-effect voor afbeelding */
+.hover-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+}
+  
+  .hover-image img {
+    max-width: 200px;
+    height: auto;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: px;
+  }
+
+.hover-link:hover {
+    color: gray; /* De kleur van de link */
+    text-decoration: none; /* Optioneel, verwijdert de onderstreping als dat gewenst is */
+}
+
+.hover-link:hover::after {
+    color: gray; /* De kleur van de pijl */
+}
+
+.hover-text {
+    display: inline-block;
+    transition: color 0.3s ease; /* Dit zorgt voor een soepele overgang bij hover */
+}
+
+.hover-text span {
+    display: inline-block;
+    transition: color 0.3s ease; /* Soepele overgang voor kleurverandering */
+}
+
+
+#hover-effect {
+    position: absolute;
+    display: none;
+    pointer-events: none; /* Voorkom dat de hover-container interacties blokkeert */
+}
+
+.hover-layer {
+    position: absolute;
+    opacity: 0; /* Begin onzichtbaar */
+    transform-origin: center; /* Rotatie vanuit het midden */
+    animation: fadeInSpread 0.5s ease-out forwards; /* Fade-in animatie */
+}
+
+@keyframes fadeInSpread {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translate(0px, 0px) rotate(0deg); /* Begin dicht bij elkaar */
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translate(var(--translate-x), var(--translate-y)) rotate(var(--rotate)); /* Spreid uit */
+    }
+}
+
+.hover-font {
+    display: inline-block;
+    white-space: pre;
+    line-height: 1.2;
+    height: 35px; /* Vaste hoogte voor consistentie */
+    overflow: hidden; /* Tekst buiten de hoogte wordt verborgen */
+    display: flex; /* Flexbox voor centreren */
+    align-items: center; /* Verticaal centreren */
+    justify-content: left; /* Optioneel: Horizontaal centreren */
+    text-align: left; /* Optioneel: Tekst uitlijning */
+}
+
+.hover-font span {
+    display: inline-block;
+    transition: font-family 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 3fr));
+    gap: 30px; /* Ruimte tussen kaarten */
+    padding: 50px; /* Ruimte rond de grid */
+  }
+  
+  .project-card {
+    overflow: hidden; /* Zorg dat inhoud binnen blijft */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Subtiele schaduw */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .project-card:hover {
+    transform: translateY(-5px); /* Lichte verhoging bij hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Titel en beschrijving */
+  .project-content {
+    padding: 20px;
+    text-align: left;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  .project-content h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .project-content p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  /* Afbeelding */
+  .project-image {
+    height: 200px; /* Hoogte van de afbeelding */
+    background-size: cover;
+    background-position: center;
+    transition: filter 0.3s ease, transform 0.3s ease;
+  }
+  
+  .project-card:hover .project-image {
+    filter: brightness(0.7); /* Donkerder bij hover */
+    transform: scale(1.05); /* Kleine zoom-in */
+  }
+  
+/* Standaard styling voor de link en pijl */
+.project-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #131314; /* Kleur van de tekst */
+    text-decoration: none;
+    font-weight: bold;
+    position: relative;
+    transition: color 0.2s ease;
+  }
+  
+  .project-link::after {
+    content: '↗'; /* De pijl die na de tekst komt */
+    margin-left: 10px;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Hover-effect op de pijl */
+  .project-link:hover::after {
+    transform: translateX(5px); /* Pijl beweegt naar rechts */
+  }
+  
+  /* Optioneel: voeg een effect toe wanneer je de gehele projectkaart hoverd */
+  .project-card:hover .project-link::after {
+    transform: translateX(10px); /* Verhoog de verschuiving van de pijl bij hover over de kaart */
+  }
+  
+  .projects-carousel {
+    position: relative;
+    max-width: 100%;
+    overflow: hidden; /* Verberg overlopende inhoud */
+  }
+  
+  .carousel-container {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+  }
+  
+  .carousel-item {
+    min-width: 100%;
+    height: 400px; /* Pas de hoogte aan aan je afbeelding */
+    background-size: cover;
+    background-position: center;
+  }
+  
+  button {
+    position: absolute;
+    top: 50%;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 2rem;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    transform: translateY(-50%);
+  }
+  
+  .prev-button {
+    left: 10px;
+  }
+  
+  .next-button {
+    right: 10px;
+  }
+  
+  .contact-page {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  /* Formulierinstellingen */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 150px;
+  }
+  
+  /* Submit-knop */
+  .submit-btn {
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .submit-btn:hover {
+    background-color: #555;
+  }
+  
+  /* Responsieve afmetingen */
+  @media (max-width: 600px) {
+    .contact-page {
+      padding: 1.5rem;
+    }
+  
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
