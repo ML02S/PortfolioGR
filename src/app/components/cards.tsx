@@ -8,6 +8,7 @@ import { RightArrow, UpRightArrow } from "./arrows";
 import { CardsContext } from "../cardsContext";
 import Matter from 'matter-js';
 import { Mouse, MouseConstraint } from 'matter-js';
+import MobileMenu from './MobileMenu';
 
 export default function Cards() {
   const [screen, setScreen] = useState<Window | undefined>(undefined);
@@ -17,6 +18,8 @@ export default function Cards() {
   const cardsRef = useRef<{ [key: number]: Matter.Body }>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const [cardPositions, setCardPositions] = useState<{ [key: number]: { x: number; y: number; angle: number } }>({});
+  const isDraggingRef = useRef(false);
+  const dragStartTimeRef = useRef(0);
 
   const cardPadding = 8; // Match the card's CSS padding
   const cardBorderRadius = 8; // Match the card's CSS border-radius
@@ -28,49 +31,70 @@ export default function Cards() {
     setScreen(window);
     setLoading(false);
 
-    // Initialize physics engine
+    // Initialize physics engine with different settings for mobile
     const engine = Matter.Engine.create({
-      gravity: { x: 0, y: 1, scale: 0.002 }
+      gravity: { 
+        x: 0, 
+        y: isMobile ? 0.5 : 1, 
+        scale: isMobile ? 0.001 : 0.002 
+      }
     });
     engineRef.current = engine;
 
-    // Create walls
+    // Create walls with adjusted positions for mobile
     const wallOptions = { isStatic: true, render: { visible: false } };
-    const headerHeight = 120; // Adjust if your header is taller
-    const walls = [
-      Matter.Bodies.rectangle(window.innerWidth / 2, window.innerHeight + 30, window.innerWidth, 60, wallOptions), // bottom
-      Matter.Bodies.rectangle(-30, window.innerHeight / 2, 60, window.innerHeight, wallOptions), // left
-      Matter.Bodies.rectangle(window.innerWidth + 30, window.innerHeight / 2, 60, window.innerHeight, wallOptions), // right
-      Matter.Bodies.rectangle(window.innerWidth / 2, -30, window.innerWidth, 60, wallOptions), // top
-    ];
+    const headerHeight = isMobile ? 80 : 120; // Smaller header on mobile
 
-    // Create cards
+    // Create cards with adjusted physics for mobile
     const cards = worksReversed.map((item, index) => {
-      // The card's visual size includes padding
       const cardWidth = (item.width + 2 * cardPadding) * scale;
       const cardHeight = (item.height + 2 * cardPadding) * scale;
-      // Randomize X position within the viewport
-      const x = Math.random() * (window.innerWidth - cardWidth) + cardWidth / 2;
-      // Start above the header, but randomize Y a bit
-      const y = headerHeight + cardHeight / 2 - 100 - Math.random() * 100;
-      // Randomize initial angle between -20 and 20 degrees
-      const angle = (Math.random() - 0.5) * (Math.PI / 9);
+      
+      // Calculate grid position for better distribution
+      const cardsPerRow = isMobile ? 2 : 3;
+      const row = Math.floor(index / cardsPerRow);
+      const col = index % cardsPerRow;
+      
+      // Calculate spacing between cards
+      const horizontalSpacing = window.innerWidth / (cardsPerRow + 1);
+      const verticalSpacing = (window.innerHeight - headerHeight) / (Math.ceil(worksReversed.length / cardsPerRow) + 1);
+      
+      // Position cards in a grid-like pattern
+      const x = horizontalSpacing * (col + 1);
+      const y = headerHeight + (verticalSpacing * (row + 1));
+      
+      // Randomize angle within a smaller range for better visibility
+      const angle = (Math.random() - 0.5) * (Math.PI / 18); // ±10 degrees
+      
       const card = Matter.Bodies.rectangle(x, y, cardWidth, cardHeight, {
         angle,
-        restitution: 0.2,
-        friction: 0.3,
-        frictionAir: 0.02,
-        render: { visible: false }
+        restitution: isMobile ? 0.1 : 0.2,
+        friction: isMobile ? 0.5 : 0.3,
+        frictionAir: isMobile ? 0.05 : 0.02,
+        render: { visible: false },
+        // Add a small margin to prevent cards from overlapping
+        chamfer: { radius: 5 }
       });
-      // Give a small random initial velocity and spin
+
+      // Very gentle initial velocity on mobile
       Matter.Body.setVelocity(card, {
-        x: (Math.random() - 0.5) * 5,
-        y: Math.random() * 2
+        x: (Math.random() - 0.5) * (isMobile ? 1 : 5),
+        y: Math.random() * (isMobile ? 0.5 : 2)
       });
-      Matter.Body.setAngularVelocity(card, (Math.random() - 0.5) * 0.2);
+      Matter.Body.setAngularVelocity(card, (Math.random() - 0.5) * (isMobile ? 0.05 : 0.2));
+      
       cardsRef.current[index] = card;
       return card;
     });
+
+    // Adjust walls to be closer to the viewport on mobile
+    const wallMargin = isMobile ? 10 : 30;
+    const walls = [
+      Matter.Bodies.rectangle(window.innerWidth / 2, window.innerHeight + wallMargin, window.innerWidth, 60, wallOptions), // bottom
+      Matter.Bodies.rectangle(-wallMargin, window.innerHeight / 2, 60, window.innerHeight, wallOptions), // left
+      Matter.Bodies.rectangle(window.innerWidth + wallMargin, window.innerHeight / 2, 60, window.innerHeight, wallOptions), // right
+      Matter.Bodies.rectangle(window.innerWidth / 2, -wallMargin, window.innerWidth, 60, wallOptions), // top
+    ];
 
     Matter.Composite.add(engine.world, [...walls, ...cards]);
 
@@ -98,10 +122,10 @@ export default function Cards() {
     // Handle window resize
     const handleResize = () => {
       walls[0].position.x = window.innerWidth / 2;
-      walls[0].position.y = window.innerHeight + 30;
-      walls[2].position.x = window.innerWidth + 30;
+      walls[0].position.y = window.innerHeight + wallMargin;
+      walls[2].position.x = window.innerWidth + wallMargin;
       walls[3].position.x = window.innerWidth / 2;
-      walls[3].position.y = -30;
+      walls[3].position.y = -wallMargin;
     };
     window.addEventListener('resize', handleResize);
 
@@ -124,79 +148,120 @@ export default function Cards() {
         render: { visible: false }
       }
     });
+
+    // Track when dragging starts
+    mouseConstraint.mouse.element.addEventListener('mousedown', () => {
+      isDraggingRef.current = true;
+      dragStartTimeRef.current = Date.now();
+    });
+
+    // Track when dragging ends
+    mouseConstraint.mouse.element.addEventListener('mouseup', () => {
+      isDraggingRef.current = false;
+    });
+
     Matter.Composite.add(engine.world, mouseConstraint);
     return () => {
       Matter.Composite.remove(engine.world, mouseConstraint);
     };
   }, [containerRef.current]);
 
+  const handleCardClick = (url: string) => {
+    // Only navigate if it's a quick click (not a drag)
+    if (!isDraggingRef.current && Date.now() - dragStartTimeRef.current < 200) {
+      window.location.href = url;
+    }
+  };
+
   // Only use Framer Motion for hover/active effects, not for position/rotation
   return !loading ? (
-    <div ref={containerRef} className="cards-container" style={{ pointerEvents: 'auto' }}>
-      {worksReversed.map((item, index) => {
-        if (screen === undefined) return null;
-        const cardInFocus = focusedCard !== null ? (focusedCard === item.id ? true : false) : true;
-        const position = cardPositions[index];
-        if (!position) return null;
-        return (
-          <motion.div
-            key={typeof item.img_url === 'string' ? item.img_url : item.img_url.src}
-            className="card-container"
-            style={{
-              position: 'absolute',
-              left: position.x - (item.width + 2 * cardPadding) / 2,
-              top: position.y - (item.height + 2 * cardPadding) / 2,
-              width: item.width + 2 * cardPadding,
-              height: item.height + 2 * cardPadding,
-              transform: `rotate(${position.angle * (180 / Math.PI)}deg)`,
-              zIndex: 2
-            }}
-            whileHover={{ translateY: -4 }}
-            whileTap={{ scale: 1.01 }}
-          >
-            <div
-              className={`card-${index} card`}
+    <>
+      <div ref={containerRef} className="cards-container" style={{ pointerEvents: 'auto' }}>
+        {worksReversed.map((item, index) => {
+          if (screen === undefined) return null;
+          const cardInFocus = focusedCard !== null ? (focusedCard === item.id ? true : false) : true;
+          const position = cardPositions[index];
+          if (!position) return null;
+          return (
+            <motion.div
+              key={typeof item.img_url === 'string' ? item.img_url : item.img_url.src}
+              className="card-container"
               style={{
-                filter: cardInFocus ? "unset" : "(12px)",
-                opacity: cardInFocus ? 1 : 0,
-                backgroundColor: "rgba(255, 255, 255, 0.7)",
-                backdropFilter: "blur(5px)",
+                position: 'absolute',
+                left: position.x - (item.width + 2 * cardPadding) / 2,
+                top: position.y - (item.height + 2 * cardPadding) / 2,
                 width: item.width + 2 * cardPadding,
                 height: item.height + 2 * cardPadding,
-                overflow: 'hidden',
-                borderRadius: cardBorderRadius
+                transform: `rotate(${position.angle * (180 / Math.PI)}deg)`,
+                zIndex: 2,
+                cursor: 'grab'
               }}
+              whileHover={{ translateY: -4 }}
+              whileTap={{ scale: 1.01, cursor: 'grabbing' }}
             >
-              <div className="card-header">
-                <a className="card-name card-link" href={item.url}>
-                  <span>{item.id}</span>
-                  {item.external ? <UpRightArrow /> : <RightArrow />}
-                </a>
-                <span className="card-name" style={{ opacity: 0.2 }}>
-                  {item.year}
-                </span>
-              </div>
-              <Image
-                src={item.img_url}
-                alt={typeof item.img_url === 'string' ? item.img_url : item.img_url.src}
-                width={item.width}
-                height={item.height}
-                draggable={false}
-                priority={true}
+              <div
+                className={`card-${index} card`}
                 style={{
-                  borderRadius: cardBorderRadius - 2, // slightly less than card for a nice effect
-                  width: `calc(100% - 16px)`,         // 8px padding on each side
-                  height: `calc(100% - 40px)`,        // 8px padding top/bottom + space for header (24px header)
-                  objectFit: 'cover',
-                  margin: 8,
-                  display: 'block',
-                  background: '#eee'
+                  filter: cardInFocus ? "unset" : "blur(12px)",
+                  opacity: cardInFocus ? 1 : 0,
+                  backgroundColor: "rgba(255, 255, 255, 0.7)",
+                  backdropFilter: "blur(5px)",
+                  width: item.width + 2 * cardPadding,
+                  height: item.height + 2 * cardPadding,
+                  overflow: 'hidden',
+                  borderRadius: cardBorderRadius,
+                  position: 'relative'
                 }}
-              />
-            </div>
-          </motion.div>
-        );
-      })}
-    </div>
+              >
+                <div className="card-header" style={{ 
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  zIndex: 3,
+                  padding: '8px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(5px)'
+                }}>
+                  <div className="card-name" style={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span>{item.id}</span>
+                    {item.external ? <UpRightArrow /> : <RightArrow />}
+                  </div>
+                  <span className="card-year" style={{ 
+                    opacity: 0.2,
+                    fontSize: '0.9em'
+                  }}>
+                    {item.year}
+                  </span>
+                </div>
+                <Image
+                  src={item.img_url}
+                  alt={typeof item.img_url === 'string' ? item.img_url : item.img_url.src}
+                  width={item.width}
+                  height={item.height}
+                  draggable={false}
+                  priority={true}
+                  style={{
+                    borderRadius: cardBorderRadius - 2,
+                    width: `calc(100% - 16px)`,
+                    height: `calc(100% - 40px)`,
+                    objectFit: 'cover',
+                    margin: 8,
+                    display: 'block',
+                    background: '#eee',
+                    marginTop: '40px'
+                  }}
+                />
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+      {isMobile && <MobileMenu />}
+    </>
   ) : null;
 }
