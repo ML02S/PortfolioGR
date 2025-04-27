@@ -22,7 +22,7 @@ export default function Cards() {
   const cardBorderRadius = 8; // Match the card's CSS border-radius
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
-  const scale = isMobile ? 0.6 : 1;
+  const scale = isMobile ? 0.5 : 1;
 
   useEffect(() => {
     setScreen(window);
