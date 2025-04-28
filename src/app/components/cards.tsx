@@ -3,12 +3,79 @@
 import Image from "next/image";
 import { worksReversed } from "../data/works";
 import { useState, useEffect, useRef, useContext } from "react";
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { RightArrow, UpRightArrow } from "./arrows";
 import { CardsContext } from "../cardsContext";
 import Matter from 'matter-js';
 import { Mouse, MouseConstraint } from 'matter-js';
 import MobileMenu from './MobileMenu';
+
+const CardHeader = ({ item, index }: { item: any, index: number }) => {
+  const arrowControls = useAnimation();
+
+  return (
+    <motion.div 
+      className="card-header" 
+      style={{ 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 3,
+        padding: '8px',
+        cursor: 'pointer'
+      }}
+      onClick={() => window.location.href = item.url}
+    >
+      <motion.div 
+        className="card-name" 
+        style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+        onHoverStart={() => {
+          arrowControls.start({
+            rotate: -45,
+            transition: { duration: 0.2 }
+          });
+        }}
+        onHoverEnd={() => {
+          arrowControls.start({
+            rotate: 0,
+            transition: { duration: 0.2 }
+          });
+        }}
+        variants={{
+          hover: {
+            color: "#666666",
+            x: 4
+          },
+          tap: {
+            color: "#444444",
+            x: 2
+          }
+        }}
+        whileHover="hover"
+        whileTap="tap"
+      >
+        <span>{item.id}</span>
+        <motion.span
+          style={{ color: "inherit" }}
+          animate={arrowControls}
+        >
+          {item.external ? <UpRightArrow /> : <RightArrow />}
+        </motion.span>
+      </motion.div>
+      <span className="card-year" style={{ 
+        opacity: 0.2,
+        fontSize: '0.8em'
+      }}>
+        {item.year}
+      </span>
+    </motion.div>
+  );
+};
 
 export default function Cards() {
   const [screen, setScreen] = useState<Window | undefined>(undefined);
@@ -176,91 +243,65 @@ export default function Cards() {
   // Only use Framer Motion for hover/active effects, not for position/rotation
   return !loading ? (
     <>
-      <div ref={containerRef} className="cards-container" style={{ pointerEvents: 'auto' }}>
-        {worksReversed.map((item, index) => {
-          if (screen === undefined) return null;
-          const cardInFocus = focusedCard !== null ? (focusedCard === item.id ? true : false) : true;
-          const position = cardPositions[index];
-          if (!position) return null;
-          return (
-            <motion.div
-              key={typeof item.img_url === 'string' ? item.img_url : item.img_url.src}
-              className="card-container"
+    <div ref={containerRef} className="cards-container" style={{ pointerEvents: 'auto' }}>
+      {worksReversed.map((item, index) => {
+        if (screen === undefined) return null;
+        const cardInFocus = focusedCard !== null ? (focusedCard === item.id ? true : false) : true;
+        const position = cardPositions[index];
+        if (!position) return null;
+        return (
+          <motion.div
+            key={typeof item.img_url === 'string' ? item.img_url : item.img_url.src}
+            className="card-container"
+            style={{
+              position: 'absolute',
+              left: position.x - (item.width + 2 * cardPadding) / 2,
+              top: position.y - (item.height + 2 * cardPadding) / 2,
+              width: item.width + 2 * cardPadding,
+              height: item.height + 2 * cardPadding,
+              transform: `rotate(${position.angle * (180 / Math.PI)}deg)`,
+              zIndex: 2,
+              cursor: 'grab'
+            }}
+            whileHover={{ translateY: -4 }}
+            whileTap={{ scale: 1.01, cursor: 'grabbing' }}
+          >
+            <div
+              className={`card-${index} card`}
               style={{
-                position: 'absolute',
-                left: position.x - (item.width + 2 * cardPadding) / 2,
-                top: position.y - (item.height + 2 * cardPadding) / 2,
+                filter: cardInFocus ? "unset" : "blur(12px)",
+                opacity: cardInFocus ? 1 : 0,
+                backdropFilter: "blur(5px)",
                 width: item.width + 2 * cardPadding,
                 height: item.height + 2 * cardPadding,
-                transform: `rotate(${position.angle * (180 / Math.PI)}deg)`,
-                zIndex: 2,
-                cursor: 'grab'
+                overflow: 'hidden',
+                borderRadius: cardBorderRadius,
+                position: 'relative'
               }}
-              whileHover={{ translateY: -4 }}
-              whileTap={{ scale: 1.01, cursor: 'grabbing' }}
             >
-              <div
-                className={`card-${index} card`}
+              <CardHeader item={item} index={index} />
+              <Image
+                src={item.img_url}
+                alt={typeof item.img_url === 'string' ? item.img_url : item.img_url.src}
+                width={item.width}
+                height={item.height}
+                draggable={false}
+                priority={true}
                 style={{
-                  filter: cardInFocus ? "unset" : "blur(12px)",
-                  opacity: cardInFocus ? 1 : 0,
-                  backgroundColor: "rgba(255, 255, 255, 0.7)",
-                  backdropFilter: "blur(5px)",
-                  width: item.width + 2 * cardPadding,
-                  height: item.height + 2 * cardPadding,
-                  overflow: 'hidden',
-                  borderRadius: cardBorderRadius,
-                  position: 'relative'
-                }}
-              >
-                <div className="card-header" style={{ 
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  zIndex: 3,
-                  padding: '8px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                  backdropFilter: 'blur(5px)'
-                }}>
-                  <div className="card-name" style={{ 
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <span>{item.id}</span>
-                    {item.external ? <UpRightArrow /> : <RightArrow />}
-                  </div>
-                  <span className="card-year" style={{ 
-                    opacity: 0.2,
-                    fontSize: '0.9em'
-                  }}>
-                    {item.year}
-                  </span>
-                </div>
-                <Image
-                  src={item.img_url}
-                  alt={typeof item.img_url === 'string' ? item.img_url : item.img_url.src}
-                  width={item.width}
-                  height={item.height}
-                  draggable={false}
-                  priority={true}
-                  style={{
                     borderRadius: cardBorderRadius - 2,
                     width: `calc(100% - 16px)`,
                     height: `calc(100% - 40px)`,
-                    objectFit: 'cover',
-                    margin: 8,
-                    display: 'block',
-                    background: '#eee',
+                  objectFit: 'cover',
+                  margin: 8,
+                  display: 'block',
                     marginTop: '40px'
-                  }}
-                />
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
+                }}
+              />
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
       {isMobile && <MobileMenu />}
     </>
   ) : null;
